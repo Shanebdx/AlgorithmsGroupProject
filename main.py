@@ -69,8 +69,11 @@ def decrypt_message(crypted_message, d, n):
 
 def findPsPrime(n1, n2, k):
 
+    # randomly selecting a number that's between the inputs n1 and n2
     n = random.randint(n1, n2)
+    # initializing a boolean variable to check if n is pseudo-prime or not
     psPrime = False
+    # while look to keep 
     while not psPrime:
         for i in range(k):
             a = random.randint(2, n)
