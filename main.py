@@ -67,6 +67,29 @@ def decrypt_message(crypted_message, d, n):
 
     return ''.join(orignalString)
 
+def findPsPrime(n1, n2, k):
+
+    n = random.randint(n1, n2)
+    psPrime = False
+    while not psPrime:
+        for i in range(k):
+            a = random.randint(2, n)
+            if pow(a, n-1, n) > 1:
+                n = random.randint(n1, n2)
+        psPrime = True
+    return n
+
+def testPrime(n):
+    if n == 2:
+        return True
+    else:
+        for i in range(2, math.floor(math.sqrt(n))):
+            if math.gcd(n, i) > 1:
+                return False
+            else:
+                continue
+        return True
+
 
 def main():
     p = 433
