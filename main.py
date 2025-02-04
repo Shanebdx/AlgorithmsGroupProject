@@ -152,7 +152,7 @@ def decrypt_message(crypted_message, d, n):
 
 def generateKeys(p,q):
     """
-    Given p and q genrate n,e,d.
+    Given p and q generate n,e,d.
     Returns a tuple of tuples ( (e,n) , (d, n) )
     These return values are public key, private key
     """
@@ -184,8 +184,6 @@ def authticate_signature(message, signature, e, n):
     returns boolean
     """
     signature_copy = []
-
-    print(signature)
     for value in signature:
         signature_copy.append(chr(pow(value,e,n)))
     
@@ -220,18 +218,15 @@ Select an option:
     #Uses a match statement to direct menu to appropaite menu
     match userChoice:
         case "1":
-            user_menu()
-            return
+            return 'User'
         case "2":
-            server_menu()
-            return
+            return 'Owner'
         case "3":
-            key_menu()
-            return
+            return 'Key'
         case "4":
-            quit
+            exit()
 
-    return
+    return False
 
 def user_menu():
     """
@@ -251,8 +246,7 @@ Options For Public Users.
     #Checks if user input is valid, if not restart main menu.
     if(userChoice != '1' and userChoice != '2' and userChoice != '3'):
         print("Invalid Choice Please Try Again.")
-        user_menu()
-        return -1
+        return False
 
     #Uses a match statement to direct menu to appropaite menu
     match userChoice:
@@ -260,13 +254,13 @@ Options For Public Users.
             userChoice = str(input("Please Enter A Message: "))
             encrypted_messages.append(encrypt_messsage(userChoice,public_key[0], public_key[1]))
             print("Message Succesfully Encrypted")
-            main_menu()
+            return False
         case "2":
             print("Choose A Signature To Validate")
 
             if(len(signatures) < 1):
                 print("There Are No Signatures To Validate.")
-                user_menu()
+                return False
             else:
                 #Print out each message then ask the user which one to decrypt
                 index = 1
@@ -280,27 +274,23 @@ Options For Public Users.
                     userChoice = int(str(input("Choose an option: ")))
                 except ValueError:
                     print("Invalid Choice.")
-                    user_menu()
-                    return
+                    return False
 
                 #Ensures the user selects a valid choice 
                 if(userChoice < 1 or userChoice > index):
                     print("Invalid Choice.")
-                    server_menu()
-                    return
+                    return False
 
                 #Varifies the message
                 if(authticate_signature(signatures[userChoice-1][0], signatures[userChoice-1][1], public_key[0], public_key[1])):
                     print("Signature is valid.")
                 else:
                     print("Signature is not valid (new keys were generated)")
-                server_menu()
-                return
+                return False
         case "3":
-            main_menu()
-            return
+            return True
 
-    return
+    return False
 
 def server_menu():
     """
@@ -320,8 +310,7 @@ Options For Key Owner.
     #Checks if user input is valid, if not restart main menu.
     if(userChoice != '1' and userChoice != '2' and userChoice != '3'):
         print("Invalid Choice Please Try Again.")
-        server_menu()
-        return -1
+        return
 
     #Uses a match statement to direct menu to appropaite menu
     match userChoice:
@@ -330,8 +319,7 @@ Options For Key Owner.
 
             if(len(encrypted_messages) < 1):
                 print("There Are No Messages To Decrypt.")
-                server_menu()
-                return ""
+                False
             else:
                 #Print out each message then ask the user which one to decrypt
                 index = 1
@@ -346,32 +334,26 @@ Options For Key Owner.
                 except ValueError:
                     print("Invalid Choice.")
                     server_menu()
-                    return ""
+                    return False
 
                 #Ensures the user selects a valid choice 
                 if(userChoice < 1 or userChoice > index):
                     print("Invalid Choice.")
-                    server_menu()
-                    return ""
+                    return False
 
                 #Decrypts the message selected
                 print(f'Decrypted Message: {decrypt_message(encrypted_messages[userChoice-1], private_key[0], private_key[1])}')
-                server_menu()
-                return ""
+                return False
 
         case "2":
             #Create message and sign it using the private key
             userChoice = str(input("Enter Message To Be Signed: "))
-            print("Break point 1")
             signatures.append((userChoice, sign_message(userChoice, private_key[0], private_key[1])))
             print("Message Signed")
-            server_menu()
-            return ""
+            return False
         case "3":
-            main_menu()
-            return ""
+            return True
 
-    return 1
 
 def key_menu():
     """
@@ -392,25 +374,22 @@ Key Options
     #Checks if user input is valid, if not restart main menu.
     if((userChoice != '1' and userChoice != '2') and (userChoice != '3' and userChoice != '4')):
         print("Invalid Choice Please Try Again.")
-        key_menu()
-        return -1
+        return False
 
     #Uses a match statement to direct menu to appropaite menu
     match userChoice:
         case "1":
             print('Public Key: ', 'e', public_key[0], 'n', public_key[1])
             print('Private Key: ', 'd', private_key[0], 'n', private_key[1])
-            key_menu()
-            return ""
+            return False
         case "2":
             print("q =", q)
             print("p =", p)
             print("n =", public_key[1])
             print("phi =", (p-1)*(q-1))
             print("e =", public_key[0])
-            print('d =', private_key[1])
-            key_menu()
-            return ""
+            print('d =', private_key[0])
+            return False
     
         case "3":
             print("Generating New Keys (This might take some time, it will also clear any encrypted messages or signatures to varify)")
@@ -419,8 +398,8 @@ Key Options
             lower = input("Please enter lower bound for prime gen: ")
             upper = input("Please enter upper bound for prime gen: ")
             
-            #Checking the number eneter to make sure they are ints
-            while(not is_int(lower) or not is_int(upper)):
+            #Checking the number eneter to make sure they are ints, using short circuiting we can also check that the lower bound is really lower
+            while(not is_int(lower) or not is_int(upper) and not (int(lower) < int(upper))):
                 print("Invalid Boundary Try Again:")
                 lower = input("Please enter lower bound for prime gen: ")
                 upper = input("Please enter upper bound for prime gen: ")
@@ -437,12 +416,10 @@ Key Options
             #Use the genrate keys function to set the global key vars to new values.
             public_key, private_key = generateKeys(p,q)
             print("Keys Generated.")
-            key_menu()
-            return ""
+            return False
         
         case "4":
-            main_menu()
-            return ""
+            return True
 
     return 1
 
@@ -456,7 +433,46 @@ public_key, private_key = generateKeys(p,q)
 
 def main():
  print("Intial Keys Generated")
- main_menu()
+ 
+ #While-True Loop to keep the program running
+ while True:
+     
+     #main menu returns the choice
+     choice = main_menu()
+
+     #Deciding which menu to go to next
+     if(choice == 'User'):
+         while True:
+             #True = main menu False = stay on sub menu value stored in swtich
+             switch = user_menu()
+
+             if(switch):
+                 break
+         
+     elif(choice == 'Owner'):
+         while True:
+             
+             #True = main menu False = stay on sub menu value stored in swtich
+             switch = server_menu()
+             
+             if(switch):
+                 break
+             
+     elif(choice == 'Key'):
+        while True:
+             
+             #True = main menu False = stay on sub menu value stored in swtich
+             switch = key_menu()
+             
+             if(switch):
+                 break
+    
+    #End of main menu while
+             
+    
+             
+
+
 
 
 main()
